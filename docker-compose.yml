@@ -1,0 +1,6 @@
+version: '3'
+services:
+  barotrauma:
+    volumes:
+      - ./local_barotrauma:/home/steam/.local/share/Daedalic\ Entertainment\ GmbH/Barotrauma/
+      - ./data:/data
