@@ -1,4 +1,5 @@
 FROM ghcr.io/f0rkz/docker-steamcmd:latest
+USER root
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -yq && \
     apt install -y --no-install-recommends \
