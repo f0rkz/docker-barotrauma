@@ -5,11 +5,12 @@ RUN apt update -yq && \
     apt install -y --no-install-recommends \
         libssl-dev
 
+COPY entrypoint.sh /home/steam/entrypoint.sh
+RUN chmod +x /home/steam/entrypoint.sh
+RUN chown steam:steam /home/steamcmd/entrypoint.sh
+
 USER steam
 
 VOLUME [ "/data" ]
-
-COPY entrypoint.sh /home/steam/entrypoint.sh
-RUN chmod +x /home/steam/entrypoint.sh
 
 CMD /home/steam/entrypoint.sh
