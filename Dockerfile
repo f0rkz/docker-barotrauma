@@ -7,7 +7,7 @@ RUN apt update -yq && \
 
 COPY entrypoint.sh /home/steam/entrypoint.sh
 RUN chmod +x /home/steam/entrypoint.sh
-RUN chown steam:steam /home/steamcmd/entrypoint.sh
+RUN chown steam:steam /home/steam/entrypoint.sh
 
 USER steam
 
