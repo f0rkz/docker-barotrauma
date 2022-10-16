@@ -15,3 +15,4 @@ ln -s /home/steam/steamcmd/linux64/steamclient.so /home/steam/.steam/sdk64/steam
 
 envtmpl /home/steam/serversettings.xml.tmpl > /data/barotrauma/serversettings.xml
 cd /data/barotrauma
+./DedicatedServer
