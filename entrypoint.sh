@@ -14,5 +14,8 @@ mkdir -p /home/steam/.steam/sdk64
 ln -s /home/steam/steamcmd/linux64/steamclient.so /home/steam/.steam/sdk64/steamclient.so
 
 envtmpl /home/steam/serversettings.xml.tmpl > /data/barotrauma/serversettings.xml
+
+cp /home/steam/clientpermissions.xml /data/barotrauma/Data/clientpermissions.xml
+
 cd /data/barotrauma
 ./DedicatedServer
