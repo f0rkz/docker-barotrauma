@@ -6,3 +6,6 @@ services:
     volumes:
       - ./local_barotrauma:/home/steam/.local/share/Daedalic\ Entertainment\ GmbH/Barotrauma/
       - ./data:/data
+    ports:
+      - 27015:27015/udp
+      - 27016:27016/udp
