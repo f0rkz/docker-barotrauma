@@ -7,9 +7,8 @@ APPID=1026340
 steamcmd.sh +quit
 steamcmd.sh +force_install_dir /data/barotrauma \
             +login anonymous \
-            +app_update $APPID validate
+            +app_update $APPID validate \
             +quit
 
-envtmpl /home/steam/serversettings.xml.tmpl
-mv /home/steam/serversettings.xml /data/barotrauma
+envtmpl /home/steam/serversettings.xml.tmpl > /data/barotrauma/serversettings.xml
 cd /data/barotrauma
