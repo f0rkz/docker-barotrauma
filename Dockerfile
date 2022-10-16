@@ -1,5 +1,4 @@
 FROM ghcr.io/f0rkz/docker-steamcmd:latest
-USER root
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -yq && \
     apt install -y --no-install-recommends \
@@ -9,18 +8,15 @@ ADD https://github.com/williambailey/go-envtmpl/releases/download/v0.3.0/envtmpl
 RUN tar zxfv /tmp/envtmpl_0.3.0_linux_amd64.tar.gz -C /tmp
 RUN cp /tmp/envtmpl_0.3.0_linux_amd64/envtmpl /usr/local/bin && rm -rf /tmp/envtmpl*
 
-COPY entrypoint.sh /home/steam/entrypoint.sh
-RUN chmod +x /home/steam/entrypoint.sh
-RUN chown steam:steam /home/steam/entrypoint.sh
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-RUN mkdir -p /home/steam/.local
-RUN chown -R steam:steam /home/steam/.local
+RUN mkdir -p /root/.local
+RUN mkdir -p /opt/configuration
 
-USER steam
-
-COPY serversettings.xml.tmpl /home/steam/serversettings.xml.tmpl
+COPY serversettings.xml.tmpl /opt/configuration/serversettings.xml.tmpl
 
 VOLUME [ "/data" ]
-VOLUME [ "/home/steam/.local" ]
+VOLUME [ "/root/.local" ]
 
-CMD /home/steam/entrypoint.sh
+CMD /entrypoint.sh

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# This path has to exist
-mkdir -p /home/steam/.local/share/Daedalic\ Entertainment\ GmbH/Barotrauma/
+# This path has to exist. Does the gameserver make it?
+# mkdir -p /root/.local/share/Daedalic\ Entertainment\ GmbH/Barotrauma/
 
 APPID=1026340
 steamcmd.sh +quit
@@ -10,12 +10,12 @@ steamcmd.sh +force_install_dir /data/barotrauma \
             +app_update $APPID validate \
             +quit
 
-mkdir -p /home/steam/.steam/sdk64
-ln -s /home/steam/steamcmd/linux64/steamclient.so /home/steam/.steam/sdk64/steamclient.so
+mkdir -p /root/.steam/sdk64
+ln -s /opt/steamcmd/linux64/steamclient.so /root/.steam/sdk64/steamclient.so
 
-envtmpl /home/steam/serversettings.xml.tmpl > /data/barotrauma/serversettings.xml
+envtmpl /opt/configuration/serversettings.xml.tmpl > /data/barotrauma/serversettings.xml
 
-cp /home/steam/clientpermissions.xml /data/barotrauma/Data/clientpermissions.xml
+cp /opt/configuration/clientpermissions.xml /data/barotrauma/Data/clientpermissions.xml
 
 cd /data/barotrauma
 ./DedicatedServer
