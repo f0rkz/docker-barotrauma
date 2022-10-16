@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# This path has to exist. Does the gameserver make it?
-# mkdir -p /root/.local/share/Daedalic\ Entertainment\ GmbH/Barotrauma/
-
 APPID=1026340
 steamcmd.sh +quit
 steamcmd.sh +force_install_dir /data/barotrauma \

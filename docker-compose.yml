@@ -4,7 +4,6 @@ services:
     image: ghcr.io/f0rkz/docker-barotrauma:latest
     env_file: .env
     volumes:
-      - ./local:/root/.local
       - ./data:/data
       - ./clientpermissions.xml:/opt/configuration/clientpermissions.xml
     ports:
