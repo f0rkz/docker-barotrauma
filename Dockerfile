@@ -6,7 +6,7 @@ RUN apt update -yq && \
         libssl-dev
 
 ADD https://github.com/williambailey/go-envtmpl/releases/download/v0.3.0/envtmpl_0.3.0_linux_amd64.tar.gz /tmp
-RUN tar zxfv envtmpl_0.3.0_linux_amd64.tar.gz -C /tmp
+RUN tar zxfv /tmp/envtmpl_0.3.0_linux_amd64.tar.gz -C /tmp
 RUN copy /tmp/envtmpl_0.3.0_linux_amd64/envtmpl /usr/local/bin
 
 COPY entrypoint.sh /home/steam/entrypoint.sh
