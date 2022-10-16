@@ -4,9 +4,9 @@ services:
     image: ghcr.io/f0rkz/docker-barotrauma:latest
     env_file: .env
     volumes:
-      - ./local:/home/steam/.local
+      - ./local:/root/.local
       - ./data:/data
-      - ./clientpermissions.xml:/home/steam/clientpermissions.xml
+      - ./clientpermissions.xml:/opt/configuration/clientpermissions.xml
     ports:
       - 27015:27015/udp
       - 27016:27016/udp
