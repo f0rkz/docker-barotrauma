@@ -9,3 +9,7 @@ steamcmd.sh +force_install_dir /data/barotrauma \
             +login anonymous \
             +app_update $APPID validate
             +quit
+
+envtmpl /home/steam/serversettings.xml.tmpl
+mv /home/steam/serversettings.xml /data/barotrauma
+cd /data/barotrauma
