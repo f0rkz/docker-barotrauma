@@ -15,6 +15,8 @@ RUN chown steam:steam /home/steam/entrypoint.sh
 
 USER steam
 
+COPY serversettings.xml.tmpl /home/steam/serversettings.xml.tmpl
+
 VOLUME [ "/data" ]
 
 CMD /home/steam/entrypoint.sh

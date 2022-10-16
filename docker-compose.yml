@@ -1,6 +1,8 @@
 version: '3'
 services:
   barotrauma:
+    image: ghcr.io/f0rkz/docker-barotrauma:latest
+    env_file: .env
     volumes:
       - ./local_barotrauma:/home/steam/.local/share/Daedalic\ Entertainment\ GmbH/Barotrauma/
       - ./data:/data
