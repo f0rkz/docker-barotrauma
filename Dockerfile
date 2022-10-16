@@ -13,7 +13,7 @@ COPY entrypoint.sh /home/steam/entrypoint.sh
 RUN chmod +x /home/steam/entrypoint.sh
 RUN chown steam:steam /home/steam/entrypoint.sh
 
-RUN mkdir -p /home/steam/.local/share/Daedalic\ Entertainment\ GmbH/Barotrauma/
+RUN mkdir -p /home/steam/.local
 RUN chown -R steam:steam /home/steam/.local
 
 USER steam
@@ -21,5 +21,6 @@ USER steam
 COPY serversettings.xml.tmpl /home/steam/serversettings.xml.tmpl
 
 VOLUME [ "/data" ]
+VOLUME [ "/home/steam/.local" ]
 
 CMD /home/steam/entrypoint.sh

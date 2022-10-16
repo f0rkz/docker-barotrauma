@@ -4,12 +4,9 @@ services:
     image: ghcr.io/f0rkz/docker-barotrauma:latest
     env_file: .env
     volumes:
-      - barotrauma_local:/home/steam/.local/share/Daedalic\ Entertainment\ GmbH/Barotrauma/
-      - barotrauma_data:/data
+      - ./local:/home/steam/.local
+      - ./data:/data
       - ./clientpermissions.xml:/home/steam/clientpermissions.xml
     ports:
       - 27015:27015/udp
       - 27016:27016/udp
-volumes:
-  barotrauma_data:
-  barotrauma_local:
