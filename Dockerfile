@@ -11,9 +11,9 @@ RUN cp /tmp/envtmpl_0.3.0_linux_amd64/envtmpl /usr/local/bin && rm -rf /tmp/envt
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-RUN mkdir -p /opt/configuration
+RUN mkdir -p /config/barotrauma
 
-COPY serversettings.xml.tmpl /opt/configuration/serversettings.xml.tmpl
+COPY serversettings.xml.tmpl /config/barotrauma/serversettings.xml.tmpl
 
 VOLUME [ "/data" ]
 
