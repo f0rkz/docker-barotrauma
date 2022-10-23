@@ -12,6 +12,7 @@ ln -s /opt/steamcmd/linux64/steamclient.so /root/.steam/sdk64/steamclient.so
 
 # We are generating this kube
 if [ "$SETTINGS_ENVTPL" == "true" ]
+then
     envtmpl /opt/configuration/serversettings.xml.tmpl > /data/barotrauma/serversettings.xml
     cp /opt/configuration/clientpermissions.xml /data/barotrauma/Data/clientpermissions.xml
 fi
