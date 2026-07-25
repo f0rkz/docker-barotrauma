@@ -1,11 +1,16 @@
-version: '3'
 services:
   barotrauma:
-    image: ghcr.io/f0rkz/docker-barotrauma:latest
-    env_file: .env
+    image: ghcr.io/f0rkz/docker-barotrauma:1
+    restart: unless-stopped
+    init: true
+    env_file: ${BAROTRAUMA_ENV_FILE:-.env}
     volumes:
-      - ./data:/data
-      - ./clientpermissions.xml:/opt/configuration/clientpermissions.xml
+      - barotrauma-data:/data
+      - ./config:/config/barotrauma:ro
     ports:
-      - 27015:27015/udp
-      - 27016:27016/udp
+      - "27015:27015/udp"
+      - "27016:27016/udp"
+    stop_grace_period: 60s
+
+volumes:
+  barotrauma-data:

@@ -1,0 +1,76 @@
+name: Validate container image
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  schedule:
+    - cron: "31 6 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+
+      - name: Lint Dockerfile
+        run: >-
+          docker run --rm --interactive
+          hadolint/hadolint:v2.14.0-debian@sha256:158cd0184dcaa18bd8ec20b61f4c1cabdf8b32a592d062f57bdcb8e4c1d312e2
+          hadolint - < Dockerfile
+
+      - name: Check shell syntax
+        run: bash -n entrypoint.sh tests/integration.sh
+
+      - name: Lint entrypoint
+        run: >-
+          docker run --rm --volume "$PWD:/mnt:ro"
+          koalaman/shellcheck:v0.11.0@sha256:61862eba1fcf09a484ebcc6feea46f1782532571a34ed51fedf90dd25f925a8d
+          /mnt/entrypoint.sh /mnt/tests/integration.sh
+
+      - name: Build image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          load: true
+          platforms: linux/amd64
+          tags: docker-barotrauma:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Validate runtime contract and generated settings
+        run: |
+          test "$(docker run --rm --entrypoint id docker-barotrauma:test -u)" = "1000"
+          docker run --rm --entrypoint test docker-barotrauma:test -x /usr/local/bin/barotrauma-console
+          docker run --rm --env-file .env.example \
+            --env UPDATE_ON_START=false \
+            docker-barotrauma:test \
+            sh -c 'test -s /data/barotrauma/serversettings.xml'
+          if docker run --rm --env-file .env.example \
+            --env UPDATE_ON_START=false \
+            --env WORKSHOP_ITEMS=invalid \
+            docker-barotrauma:test true; then
+            echo "Invalid Workshop ID was accepted" >&2
+            exit 1
+          fi
+
+      - name: Run Barotrauma integration test
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        env:
+          BUILD_IMAGE: "false"
+        run: bash tests/integration.sh

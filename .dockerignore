@@ -1,0 +1,12 @@
+.git
+.github
+.env
+.agents
+.codex
+config
+data
+local
+tests
+*.md
+clientpermissions.xml
+clientpermissions.xml.example
