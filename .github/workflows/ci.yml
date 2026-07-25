@@ -35,13 +35,13 @@ jobs:
           hadolint - < Dockerfile
 
       - name: Check shell syntax
-        run: bash -n entrypoint.sh tests/integration.sh
+        run: bash -n entrypoint.sh tests/integration.sh tests/settings.sh tests/validate-settings-schema.sh
 
       - name: Lint entrypoint
         run: >-
           docker run --rm --volume "$PWD:/mnt:ro"
           koalaman/shellcheck:v0.11.0@sha256:61862eba1fcf09a484ebcc6feea46f1782532571a34ed51fedf90dd25f925a8d
-          /mnt/entrypoint.sh /mnt/tests/integration.sh
+          /mnt/entrypoint.sh /mnt/tests/integration.sh /mnt/tests/settings.sh /mnt/tests/validate-settings-schema.sh
 
       - name: Build image
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
@@ -68,6 +68,11 @@ jobs:
             echo "Invalid Workshop ID was accepted" >&2
             exit 1
           fi
+
+      - name: Validate managed settings merge
+        env:
+          IMAGE_NAME: docker-barotrauma:test
+        run: bash tests/settings.sh
 
       - name: Run Barotrauma integration test
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'

@@ -45,11 +45,14 @@ for _ in {1..240}; do
 
         docker run --rm \
             --volume "${VOLUME_NAME}:/data" \
+            --volume "${REPOSITORY_ROOT}/tests/validate-settings-schema.sh:/validate-settings-schema.sh:ro" \
             --entrypoint sh \
             "${IMAGE_NAME}" \
             -c "test -L '/data/state/Daedalic Entertainment GmbH/Barotrauma/WorkshopMods/Installed/${WORKSHOP_FIXTURE}' \
                 && grep -R --quiet 'Shutting down the server' /data/barotrauma/ServerLogs \
-                && grep --quiet '${WORKSHOP_FIXTURE}/filelist.xml' /data/barotrauma/config_player.xml"
+                && grep --quiet '${WORKSHOP_FIXTURE}/filelist.xml' /data/barotrauma/config_player.xml \
+                && grep --quiet 'MaxLagCompensation=' /data/barotrauma/serversettings.xml \
+                && bash /validate-settings-schema.sh /data/barotrauma/serversettings.xml /opt/barotrauma/serversettings.envmap"
 
         if [[ "${state}" == 'exited 0' ]] \
             && grep --quiet 'asking Barotrauma to close cleanly' <<<"${logs}"; then
