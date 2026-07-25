@@ -21,6 +21,34 @@ is_true() {
     [[ "${1,,}" =~ ^(1|true|yes|on)$ ]]
 }
 
+ensure_writable_directory() {
+    local directory="$1"
+    local existing_path="${directory}"
+    local ownership
+
+    while [[ ! -e "${existing_path}" ]]; do
+        existing_path="$(dirname -- "${existing_path}")"
+    done
+
+    if [[ ! -d "${existing_path}" || ! -w "${existing_path}" ]]; then
+        ownership="$(stat --format='%u:%g %A' "${existing_path}")"
+        cat >&2 <<EOF
+Cannot create or update ${directory} as UID $(id -u):GID $(id -g).
+The nearest existing path, ${existing_path}, is owned by ${ownership}.
+Version 1 requires the mounted /data tree to be writable by UID/GID 1000:1000.
+Stop the server and change the ownership of the named volume or bind-mounted host directory before restarting.
+See the version 1 migration section in the README for exact commands.
+EOF
+        return 1
+    fi
+
+    mkdir --parents "${directory}"
+    if [[ ! -w "${directory}" ]]; then
+        echo "Directory ${directory} is not writable by UID $(id -u):GID $(id -g)." >&2
+        return 1
+    fi
+}
+
 normalize_workshop_items() {
     local raw_items="${1//,/ }"
     local item
@@ -178,10 +206,9 @@ if [[ ! "${STEAMCMD_RETRIES:-3}" =~ ^[1-9][0-9]*$ ]]; then
     exit 1
 fi
 
-mkdir --parents \
-    "${SERVER_DIR}/Data" \
-    "${HOME}/.steam/sdk64" \
-    "${XDG_DATA_HOME:-/data/state}"
+ensure_writable_directory "${SERVER_DIR}/Data"
+ensure_writable_directory "${HOME}/.steam/sdk64"
+ensure_writable_directory "${XDG_DATA_HOME:-/data/state}"
 
 if is_true "${UPDATE_ON_START}"; then
     update_server

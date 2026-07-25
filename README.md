@@ -119,6 +119,26 @@ Existing bind mounts may need ownership changes. Preserve the old `/data`
 contents, mount them at `/data`, and take a backup before the first version 1
 start.
 
+For the named volume in the supplied Compose file, migrate ownership with:
+
+```bash
+docker compose stop barotrauma
+docker compose run --rm --no-deps --user root --entrypoint chown \
+  barotrauma -R 1000:1000 /data
+docker compose start barotrauma
+```
+
+For a bind mount, stop the server and change the mounted host directory instead:
+
+```bash
+sudo chown -R 1000:1000 /path/to/barotrauma-data
+docker compose start barotrauma
+```
+
+The container deliberately does not change mounted-directory ownership at every
+startup because doing so would require starting as root and could unexpectedly
+alter host files.
+
 ## Local development
 
 ```bash
