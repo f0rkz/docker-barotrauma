@@ -68,6 +68,14 @@ jobs:
             echo "Invalid Workshop ID was accepted" >&2
             exit 1
           fi
+          if ownership_error="$(docker run --rm \
+            --mount type=tmpfs,destination=/data,tmpfs-mode=0755 \
+            --env UPDATE_ON_START=false \
+            docker-barotrauma:test true 2>&1)"; then
+            echo "A root-owned data mount was accepted" >&2
+            exit 1
+          fi
+          grep --quiet "requires the mounted /data tree to be writable" <<<"${ownership_error}"
 
       - name: Run Barotrauma integration test
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
