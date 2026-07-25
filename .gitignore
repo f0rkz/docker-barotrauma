@@ -1,4 +1,5 @@
 .env
 clientpermissions.xml
+config/
 local/
 data/

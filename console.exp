@@ -1,0 +1,30 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+match_max 100000
+
+proc request_shutdown {} {
+    global shutdown_requested
+
+    if {!$shutdown_requested} {
+        set shutdown_requested 1
+        send_user "Shutdown requested; asking Barotrauma to close cleanly.\n"
+        send -- "quit\r"
+    }
+}
+
+set shutdown_requested 0
+trap request_shutdown {SIGINT SIGTERM}
+
+spawn -noecho {*}$argv
+
+expect {
+    -exact "\033\[6n" {
+        send -- "\033\[1;1R"
+        exp_continue
+    }
+    eof {
+        set result [wait]
+        exit [lindex $result 3]
+    }
+}
