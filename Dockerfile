@@ -13,7 +13,6 @@ USER root
 # hadolint ignore=DL3008
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends \
-        gettext-base \
         expect \
         libgssapi-krb5-2 \
         libicu76 \
@@ -28,14 +27,14 @@ RUN apt-get update \
         /data/state \
         /opt/barotrauma
 
-COPY --chown=steam:steam serversettings.xml.tmpl /opt/barotrauma/serversettings.xml.tmpl
+COPY --chown=steam:steam serversettings.envmap /opt/barotrauma/serversettings.envmap
 COPY --chown=steam:steam entrypoint.sh /usr/local/bin/barotrauma-entrypoint
 COPY --chown=steam:steam console.exp /usr/local/bin/barotrauma-console
 
 ENV APP_ID=1026340 \
     CONFIG_DIR=/config/barotrauma \
     SERVER_DIR=/data/barotrauma \
-    SETTINGS_TEMPLATE_FILE=/opt/barotrauma/serversettings.xml.tmpl \
+    SERVER_SETTINGS_MAP_FILE=/opt/barotrauma/serversettings.envmap \
     STEAMCMD_VALIDATE=false \
     UPDATE_ON_START=true \
     WORKSHOP_APP_ID=602960 \

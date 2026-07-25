@@ -32,14 +32,27 @@ For a bind mount, make the host directory writable by UID/GID 1000.
 
 ## Server configuration
 
-`SETTINGS_TEMPLATE=true` generates `/data/barotrauma/serversettings.xml` from
-`.env` on each start. The variables are listed in [.env.example](.env.example).
-Values must be valid XML attribute values; escape `&`, `<`, and double quotes in
-names, passwords, and messages.
+`MANAGE_SERVER_SETTINGS=true` updates only the XML attributes whose environment
+variables are present. The variables are listed in [.env.example](.env.example),
+and their canonical XML attributes are defined in
+[serversettings.envmap](serversettings.envmap). Unmapped attributes and child
+elements remain untouched.
 
-Set `SETTINGS_TEMPLATE=false` to use either the persisted settings file or a
-read-only `/config/barotrauma/serversettings.xml`. The old `SETTINGS_ENVTPL`
-variable remains accepted as a migration alias.
+On a new volume, the image creates a minimal `<serversettings/>` document.
+Barotrauma loads those managed values and writes its complete current settings
+schema during startup. On later starts, the image merges environment values into
+that persisted document instead of replacing it. This allows new upstream
+settings and in-game changes to survive image updates.
+
+Set `MANAGE_SERVER_SETTINGS=false` to let Barotrauma manage the persisted file
+without environment overrides. When
+`/config/barotrauma/serversettings.xml` is mounted, it is copied verbatim before
+startup in this mode. The old `SETTINGS_TEMPLATE` and `SETTINGS_ENVTPL` variables
+remain accepted as migration aliases.
+
+See [docs/SERVER_SETTINGS.md](docs/SERVER_SETTINGS.md) for precedence, migration,
+an agent-ready deployment runbook, testing, and instructions for adding future
+settings.
 
 Optional read-only files:
 
@@ -113,7 +126,7 @@ Version 1 is intentionally breaking:
 - The SteamCMD v2 image replaces the old floating base.
 - Persistent local application state is redirected to `/data/state`.
 - Configuration mounts use `/config/barotrauma`.
-- The external `envtmpl` binary is replaced by `envsubst`.
+- Environment-managed settings use a persisted XML merge instead of `envtmpl`.
 
 Existing bind mounts may need ownership changes. Preserve the old `/data`
 contents, mount them at `/data`, and take a backup before the first version 1

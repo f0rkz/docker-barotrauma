@@ -5,8 +5,8 @@ set -Eeuo pipefail
 readonly APP_ID="${APP_ID:-1026340}"
 readonly CONFIG_DIR="${CONFIG_DIR:-/config/barotrauma}"
 readonly SERVER_DIR="${SERVER_DIR:-/data/barotrauma}"
-readonly SETTINGS_TEMPLATE_FILE="${SETTINGS_TEMPLATE_FILE:-/opt/barotrauma/serversettings.xml.tmpl}"
-readonly SETTINGS_TEMPLATE="${SETTINGS_TEMPLATE:-${SETTINGS_ENVTPL:-true}}"
+readonly SERVER_SETTINGS_MAP_FILE="${SERVER_SETTINGS_MAP_FILE:-/opt/barotrauma/serversettings.envmap}"
+readonly MANAGE_SERVER_SETTINGS="${MANAGE_SERVER_SETTINGS:-${SETTINGS_TEMPLATE:-${SETTINGS_ENVTPL:-true}}}"
 readonly STEAMCMD_VALIDATE="${STEAMCMD_VALIDATE:-false}"
 readonly UPDATE_ON_START="${UPDATE_ON_START:-true}"
 readonly WORKSHOP_APP_ID="${WORKSHOP_APP_ID:-602960}"
@@ -173,18 +173,64 @@ write_managed_player_config() {
     mv "${temporary_file}" "${config_file}"
 }
 
-configure_server() {
+merge_managed_server_settings() {
+    local settings_file="${SERVER_DIR}/serversettings.xml"
     local settings_tmp
+    local variable
+    local attribute
+    local aliases
+    local attribute_name
+    local predicate
+    local managed_count=0
+    local -a alias_names
+    local -a xml_edit=(--inplace)
+    local -r uppercase="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    local -r lowercase="abcdefghijklmnopqrstuvwxyz"
 
-    if is_true "${SETTINGS_TEMPLATE}"; then
-        settings_tmp="$(mktemp "${SERVER_DIR}/serversettings.xml.XXXXXX")"
-        envsubst <"${SETTINGS_TEMPLATE_FILE}" >"${settings_tmp}"
-        mv "${settings_tmp}" "${SERVER_DIR}/serversettings.xml"
+    settings_tmp="$(mktemp "${settings_file}.XXXXXX")"
+    if [[ -f "${settings_file}" ]]; then
+        cp "${settings_file}" "${settings_tmp}"
+    else
+        printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<serversettings />' >"${settings_tmp}"
+    fi
+
+    if [[ "$(xmlstarlet select --template --value-of 'name(/*)' "${settings_tmp}")" != "serversettings" ]]; then
+        echo "Invalid ${settings_file}: expected a serversettings root element." >&2
+        rm --force "${settings_tmp}"
+        return 1
+    fi
+
+    while read -r variable attribute aliases; do
+        if [[ -z "${variable}" || "${variable}" == \#* || ! -v "${variable}" ]]; then
+            continue
+        fi
+
+        predicate="translate(local-name(), '${uppercase}', '${lowercase}') = '${attribute,,}'"
+        if [[ "${aliases:--}" != "-" ]]; then
+            IFS=',' read -r -a alias_names <<<"${aliases}"
+            for attribute_name in "${alias_names[@]}"; do
+                predicate+=" or translate(local-name(), '${uppercase}', '${lowercase}') = '${attribute_name,,}'"
+            done
+        fi
+
+        xml_edit+=(
+            --delete "/serversettings/@*[${predicate}]"
+            --insert /serversettings --type attr --name "${attribute}" --value "${!variable}"
+        )
+        ((managed_count += 1))
+    done <"${SERVER_SETTINGS_MAP_FILE}"
+
+    if (( managed_count > 0 )); then
+        xmlstarlet edit "${xml_edit[@]}" "${settings_tmp}"
+    fi
+    mv "${settings_tmp}" "${settings_file}"
+}
+
+configure_server() {
+    if is_true "${MANAGE_SERVER_SETTINGS}"; then
+        merge_managed_server_settings
     elif [[ -f "${CONFIG_DIR}/serversettings.xml" ]]; then
         install --mode=0644 "${CONFIG_DIR}/serversettings.xml" "${SERVER_DIR}/serversettings.xml"
-    elif [[ ! -f "${SERVER_DIR}/serversettings.xml" ]]; then
-        echo "No server settings found. Provide ${CONFIG_DIR}/serversettings.xml or enable SETTINGS_TEMPLATE." >&2
-        return 1
     fi
 
     if [[ -f "${CONFIG_DIR}/clientpermissions.xml" ]]; then
@@ -194,7 +240,7 @@ configure_server() {
     fi
 }
 
-for value in "${SETTINGS_TEMPLATE}" "${STEAMCMD_VALIDATE}" "${UPDATE_ON_START}"; do
+for value in "${MANAGE_SERVER_SETTINGS}" "${STEAMCMD_VALIDATE}" "${UPDATE_ON_START}"; do
     if ! is_boolean "${value}"; then
         echo "Boolean settings accept only true/false, yes/no, on/off, or 1/0; received: ${value}" >&2
         exit 1
