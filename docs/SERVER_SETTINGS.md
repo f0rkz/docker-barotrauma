@@ -22,6 +22,48 @@ This order means a SteamCMD update can introduce settings without waiting for an
 image change. Barotrauma supplies their defaults and persists them; the image
 continues to manage only attributes listed in the mapping.
 
+## Deployment configuration runbook
+
+An agent configuring a deployment should follow these steps:
+
+1. Decide whether environment variables or an operator XML file owns settings.
+   Do not configure both mechanisms.
+2. For environment ownership, set `MANAGE_SERVER_SETTINGS=true` and include only
+   the mapped `BAROTRAUMA_*` variables that the deployment should enforce.
+   Copying all of `.env.example` intentionally manages every listed attribute.
+3. For an operator XML file, set `MANAGE_SERVER_SETTINGS=false` and mount the
+   file read-only at `/config/barotrauma/serversettings.xml`.
+4. Recreate the container after changing environment values. A Compose restart
+   does not reload `env_file` contents.
+5. Inspect the persisted XML and container logs after startup.
+
+For a campaign server managed through `.env`, the minimum mode configuration is:
+
+```dotenv
+MANAGE_SERVER_SETTINGS=true
+BAROTRAUMA_GAME_MODE_IDENTIFIER=campaign
+BAROTRAUMA_MODE_SELECTION_MODE=Manual
+```
+
+Apply and verify it with the supplied Compose service:
+
+```bash
+docker compose up -d --force-recreate barotrauma
+docker compose exec barotrauma xmlstarlet select --text --template \
+  --value-of /serversettings/@GameModeIdentifier \
+  /data/barotrauma/serversettings.xml
+docker compose logs --tail 100 barotrauma
+```
+
+The XML query must print `campaign`. Campaign creation, save selection, and the
+`CampaignSettings` child element remain owned by Barotrauma; do not add that
+child element to `serversettings.envmap`.
+
+For Compose deployments whose service is not named `barotrauma`, substitute the
+actual key under `services:`. For another orchestrator, use the same environment
+variables and persistent paths, and trigger a rollout that replaces the running
+container rather than merely restarting its process.
+
 ## Precedence
 
 | Mode | Persisted file | Operator file | Environment variables |

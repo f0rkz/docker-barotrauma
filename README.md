@@ -51,7 +51,8 @@ startup in this mode. The old `SETTINGS_TEMPLATE` and `SETTINGS_ENVTPL` variable
 remain accepted as migration aliases.
 
 See [docs/SERVER_SETTINGS.md](docs/SERVER_SETTINGS.md) for precedence, migration,
-testing, and instructions for adding future settings.
+an agent-ready deployment runbook, testing, and instructions for adding future
+settings.
 
 Optional read-only files:
 

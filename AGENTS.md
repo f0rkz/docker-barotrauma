@@ -26,6 +26,11 @@ Do not restore a whole-file `serversettings.xml` template. Barotrauma owns the
 persisted document and updates it to the schema supported by the installed game
 version. The entrypoint may update only explicitly mapped attributes.
 
+Before configuring a deployment, follow the deployment configuration runbook in
+`docs/SERVER_SETTINGS.md`. In particular, choose environment ownership or an
+operator XML file, recreate containers after environment changes, and verify the
+persisted canonical attribute after startup.
+
 When adding a server setting:
 
 1. Add the environment variable and default to `.env.example`.
